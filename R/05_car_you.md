@@ -7,16 +7,16 @@ Packages.
 
 ``` r
 library(tidyverse)
-#> ── Attaching packages ─────────────────────────────────────────────────── tidyverse 1.3.0 ──
+#> ── Attaching packages ───────────────────── tidyverse 1.3.0 ──
 #> ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
 #> ✓ tibble  3.0.3     ✓ dplyr   1.0.2
 #> ✓ tidyr   1.1.1     ✓ stringr 1.4.0
 #> ✓ readr   1.3.1     ✓ forcats 0.5.0
-#> ── Conflicts ────────────────────────────────────────────────────── tidyverse_conflicts() ──
+#> ── Conflicts ──────────────────────── tidyverse_conflicts() ──
 #> x dplyr::filter() masks stats::filter()
 #> x dplyr::lag()    masks stats::lag()
 library(here)
-#> here() starts at /home/rstudio-user/tidy-ds
+#> here() starts at /home/mauro/git/tidy-ds
 library(vroom)
 library(fs)
 library(glue)
@@ -177,11 +177,14 @@ Plot a linear model of life expectancy through time:
 
 ``` r
 picked %>% 
-  ggplot(aes(____, lifeExp, group = _______)) +
+  ______(___(____, lifeExp, group = _______)) +
   ___________(method = "__", se = _____, alpha = ___, ____ = 1/3)
 ```
 
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
 
 ![](05_car_you_files/figure-gfm/plot-lines-2-1.png)<!-- -->
 
@@ -192,11 +195,10 @@ Let’s explore two ways to get and access the parameters of those models.
 `map()` approach:
 
   - `group_by()` `country` then `nest()`.
-  - Call `lm()` inside `map()` inside `mutate()`, mapping the
-    list-column `data`.
-  - `map_*()` to apply `summary(.x)$r.squared` over the models
-    list-column …
-  - … do this inside `summarise()`.
+  - Use `map()` inside `mutate()`, to apply `lm` to the list-column
+    `data`.
+  - Use `map_dbl()` inside `summarise()` to apply `~
+    summary(.x)$r.squared`.
 
 <!-- end list -->
 
@@ -228,18 +230,28 @@ rsq
 
 Rowwise approach:
 
+  - Use `nest_by()` to create a row-wise data-frame, nested by
+    `country`.
+  - Use `lm()` inside `mutate()` (without `map()`) to create the linear
+    models.
+  - Use `summary(.x)$r.squared` inside `summarise()` to get each model’s
+    `rsq`.
+  - Use `ungroup()` to remove the rowwise groping added by `nest_by()`.
+
+<!-- end list -->
+
 ``` r
 rsq2 <- tidy %>% 
   nest_by(country) %>% 
   ______(mod = list(__(_______ ~ year, data = data))) %>% 
-  summarise(rsq = _______(mod)$r.squared)
+  _________(rsq = _______(mod)$r.squared) %>% 
+  _______()
 
 rsq2
 ```
 
     #> `summarise()` regrouping output by 'country' (override with `.groups` argument)
     #> # A tibble: 142 x 2
-    #> # Groups:   country [142]
     #>    country       rsq
     #>    <chr>       <dbl>
     #>  1 Afghanistan 0.948
@@ -258,7 +270,6 @@ rsq2
 
 In the same pipeline:
 
-  - `ungroup()` the dataset `rsq` (what happens if you don’t?).
   - `arrange()` to find order the data set by descending values of `rsq`
   - `print()` to inspect the data at this point.
   - `pull()` the `country` column.
@@ -267,7 +278,6 @@ In the same pipeline:
 
 ``` r
 countries <- rsq %>% 
-  _______() %>%
   _______(____(rsq)) %>% 
   _____() %>% 
   ____(country)
@@ -341,6 +351,53 @@ We can use this helper function to plot all plots at once:
 ``` r
 high_low %>% make_plot()
 #> `geom_smooth()` using formula 'y ~ x'
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
+
+#> Warning: Computation failed in `stat_smooth()`:
+#> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+#>   libRlapack.so: cannot open shared object file: No such file or directory
 ```
 
 ![](05_car_you_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
@@ -366,28 +423,64 @@ high_low %>%
 
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
     #> Saving 7 x 5 in image
     #> `geom_smooth()` using formula 'y ~ x'
+    #> Warning: Computation failed in `stat_smooth()`:
+    #> unable to load shared object '/home/mauro/R/x86_64-pc-linux-gnu-library/4.0/Matrix/libs/Matrix.so':
+    #>   libRlapack.so: cannot open shared object file: No such file or directory
 
   - Knit with different parameters and inspect the output.
 
@@ -395,29 +488,27 @@ high_low %>%
 
 Import:
 
-  - `vrooms()` is like `many_csv %>% map(read_csv) %>%
-    reduce(bind_rows)`.
+  - `vroom()` is like `paths %>% map(read_csv) %>% reduce(bind_rows)`.
 
 Transform:
 
   - Use `nest_by()` to create a nested data frame with row-wise
     properties.
   - Use `lm()` to fit a linear model to data.
-      - With list-columns, use `map()` inside `mutate()`
-      - With row-wise data, use `mutate()` or `summarise()` without
+      - With list-columns, use `map()` inside `mutate()` and
+        `summarise()`.
+      - With row-wise data, use `mutate()` and `summarise()` without
         `map()`.
-  - Use `pull()` to pull the values of a data frame column.
   - Use `arrange()` and maybe `desc()` to reorder rows.
-  - Use `ungroup()` when you no longer need the grouping.
+  - Use `ungroup()` any groups including rowwise.
 
 Tidy:
 
-  - Nest data frames: what happens in the data frame, stays in the data
-    frame.
+  - Use nested data frames to manipulate complex data with familiar
+    tools.
 
 Visualise:
 
-  - Use `geom_smooth()` to plot linear models.
   - Use `ggsave()` to save ggplots.
 
 Communicate:
@@ -438,4 +529,5 @@ Iteration:
       - Use `reduce()` to reduce a list to a single value with a binary
         function.
       - Use the `walk*()` family to apply side-effect functions.
-      - Use `iwalk()` as short hand for `map2(x, names(x), ...)`
+      - Use `iwalk()` as short hand for `map2(.x = x, .y = names(x),
+        ...)`
