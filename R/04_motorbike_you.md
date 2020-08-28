@@ -1,4 +1,4 @@
-Bicycle
+Motorbike
 ================
 
 **Collapse all chunks with Alt+O / Cmd+Option+O**
@@ -7,24 +7,18 @@ Packages.
 
 ``` r
 library(tidyverse)
-#> ── Attaching packages ─────────────────────────────────────────────── tidyverse 1.3.0 ──
+#> ── Attaching packages ───────────────────── tidyverse 1.3.0 ──
 #> ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
 #> ✓ tibble  3.0.3     ✓ dplyr   1.0.2
 #> ✓ tidyr   1.1.1     ✓ stringr 1.4.0
 #> ✓ readr   1.3.1     ✓ forcats 0.5.0
-#> ── Conflicts ────────────────────────────────────────────────── tidyverse_conflicts() ──
+#> ── Conflicts ──────────────────────── tidyverse_conflicts() ──
 #> x dplyr::filter() masks stats::filter()
 #> x dplyr::lag()    masks stats::lag()
 library(here)
-#> here() starts at /home/rstudio-user/tidy-ds
+#> here() starts at /home/mauro/git/tidy-ds
 library(vroom)
 library(fs)
-library(glue)
-#> 
-#> Attaching package: 'glue'
-#> The following object is masked from 'package:dplyr':
-#> 
-#>     collapse
 ```
 
 This messy dataset comes in multiple files – one per continent.
@@ -168,10 +162,9 @@ life_exp1
 #> #   `2007` <dbl>
 ```
 
-(The resulting names are non-syntactic so R surrounds them in backticks.
-Such names are awkward and you should avoid them. As you will soon see,
-here we won’t refer to them directly; instead we’ll use the tidyselect
-helpers – see `?select()`.)
+The resulting names are generally hard to work with – you should avoid
+them. But here we won’t call those names directly; instead we’ll use
+selection features from the tidyverse – see `?select()`.
 
   - Use `summarize()` to get the `mean` `across()` all columns except
     `continent`.
@@ -189,20 +182,20 @@ life_exp1 %>%
     #> 1   49.1   51.5   53.6   55.7   57.6   59.6   61.5   63.2   64.2   65.0   65.7
     #> # … with 1 more variable: `2007` <dbl>
 
-  - Now iterate over each `continent`, by grouping column-wise with
+  - Now iterate over each `continent`, by first grouping with
     `group_by()`.
-  - Compute across `everything()` (the grouping variable is excluded by
-    default).
-  - Compute the number of observations per group (use `n = n()`).
-  - Relocate the `n` column to the front with `relocate()`.
-  - Store the result as `by_continent`.
+  - Compute the `mean` across `everything()` (grouping columns are
+    excluded).
+  - Also compute the number of observations per group (use `n = n()`).
+  - Use `relocate()` to relocate the column `n` to the front of the data
+    frame.
 
 <!-- end list -->
 
 ``` r
 by_continent <- life_exp1 %>% 
   ________(continent) %>% 
-  summarize(across(everything(), mean), n = n()) %>% 
+  _________(______(everything(), mean), n = n()) %>% 
   ________(n)
 
 by_continent
@@ -245,7 +238,7 @@ total
     #> 4 Europe       30            71.9 0.707
     #> 5 Oceania       2            74.3 2.60
 
-  - Create a bar-plot (`?geom_col()`) of `continent` versus
+  - Create a bar-plot, with `geom_col()`, of `continent` versus
     `life_expectancy`.
   - Use `geom_errorbar()` to show uncertainty as `life_expectancy + se`.
   - Add this title with `labs()`: “Mean life expectancy (1952-2007)”.
@@ -267,23 +260,16 @@ data.
 
 ## Takeaways
 
-Import:
-
-  - You can read multiple files into a single data frame with
-    `map_df()`.
-
 Tidy:
 
-  - Working with messy data is not impossible but hard. Best is to tidy
-    first.
+  - Working with messy data is not impossible but hard. Tidy your data
+    ASAP.
 
 Transform:
 
-  - Two useful “select helpers” are `starts_with()` & `everything()`.
-  - Use `data %>% count( columns to group by )` to summarize your data
-    quickly.
-  - Use `group_by()` to define the groups over the summary should
-    iterate.
+  - Two useful select features are `starts_with()` & `everything()`.
+  - Use `data %>% count( columns to group by )` to quickly count rows.
+  - Use `group_by()` to define the groups you want to work within.
   - Use `summarize()` and `across()` to summarise data across columns.
   - Use `n()` inside `summarise()` to count the number of rows in each
     group.
@@ -293,13 +279,13 @@ Transform:
 
 Visualize:
 
-  - Use `geom_col()` and `geom_bar()` to create barcharts.
-  - Use `geom_errorbar()` to plot uncertainty.
-  - Use `labs()` to add a title to a plot (also subtitle, caption,
-    etc.).
+  - Use `geom_col()` to create barcharts (see also `geom_bar()`).
+  - Use `geom_errorbar()` to plot error bars.
+  - Use `labs()` to add labels such as title, subtitle, caption, and
+    more.
 
 Other:
 
-  - Side-effect functions should return their first argument
-    `invisible()`.
+  - Side-effect functions like `glimpse()` and `print()` can be used
+    mid-pipeline.
   - Use `str_replace()` to replace one string with another.
