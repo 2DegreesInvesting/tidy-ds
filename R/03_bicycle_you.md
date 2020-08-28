@@ -4,31 +4,22 @@ Bicycle
 ## Create a presentation
 
   - Render this document with “Knit” – as usual.
-
-Now render is as an “ioslides\_resentation” from the console: Run this
-code:
-
-    rmarkdown::render(
-      input = here("R/03_bicycle_you.Rmd"), 
-      output_format = "ioslides_presentation"
-    )
-
-The output file is at “R/03\_bicycle\_you.html”; open it.
+  - Change the output to `ioslides_presentation` and knit again.
 
 ## Packages
 
 ``` r
 library(tidyverse)
-#> ── Attaching packages ──────────────────────────────────────────── tidyverse 1.3.0 ──
+#> ── Attaching packages ─────────────────── tidyverse 1.3.0 ──
 #> ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
 #> ✓ tibble  3.0.3     ✓ dplyr   1.0.2
 #> ✓ tidyr   1.1.1     ✓ stringr 1.4.0
 #> ✓ readr   1.3.1     ✓ forcats 0.5.0
-#> ── Conflicts ─────────────────────────────────────────────── tidyverse_conflicts() ──
+#> ── Conflicts ────────────────────── tidyverse_conflicts() ──
 #> x dplyr::filter() masks stats::filter()
 #> x dplyr::lag()    masks stats::lag()
 library(here)
-#> here() starts at /home/rstudio-user/tidy-ds
+#> here() starts at /home/mauro/git/tidy-ds
 library(fs)
 library(vroom)
 ```
@@ -41,41 +32,6 @@ library(vroom)
 
 <img src=http://i.imgur.com/ybegKuU.png width=750>
 
-## Demo: A messy dataset
-
-This toy dataset is messy. Why?
-
-``` r
-toy <- tribble(
-  ~country, ~"2011", ~"2012", ~"2013",
-      "fr",    7000,    6900,    7000,
-      "de",    5800,    6000,    6200,
-      "us",   15000,   14000,   13000
-)
-```
-
-## Demo `pivot_longer()`
-
-To tidy this dataset we pivot over all columns except `country`. We may
-exclude `country` with `-` or select all other columns with
-`where(is.numeric)`.
-
-``` r
-toy %>% pivot_longer(where(is.numeric))
-#> # A tibble: 9 x 3
-#>   country name  value
-#>   <chr>   <chr> <dbl>
-#> 1 fr      2011   7000
-#> 2 fr      2012   6900
-#> 3 fr      2013   7000
-#> 4 de      2011   5800
-#> 5 de      2012   6000
-#> 6 de      2013   6200
-#> 7 us      2011  15000
-#> 8 us      2012  14000
-#> 9 us      2013  13000
-```
-
 ## Import
 
 Import all datasets in “data/by-continent” into a single data frame:
@@ -83,7 +39,7 @@ Import all datasets in “data/by-continent” into a single data frame:
 
 ``` r
 paths <- dir_ls(here("data", "by-continent"))
-messy <- suppressMessages(vroom(paths))
+messy <- vroom(paths)
 messy
 #> # A tibble: 142 x 38
 #>    continent country gdpPercap_1952 gdpPercap_1957 gdpPercap_1962 gdpPercap_1967
@@ -113,9 +69,9 @@ messy
 
 ## Tidy with `pivot_longer()`: Task
 
-  - Pivot over all numeric columns.
-  - Store the result as `longer`.
-  - Use `names_to = metric` (see `?pivot_longer()`).
+  - Use `where(is.numeric)` inside `pivot_longer()` to pivot over
+    numeric columns.
+  - Use the argument `names_to"` to create the new column “metric”.
 
 <!-- end list -->
 
@@ -145,11 +101,8 @@ longer
 
 ## `separate()`: Task
 
-Mess things up again:
-
-  - `metric` is still messy; tidy it with `separate()` and `c("metric",
+  - `metric` is still messy; `separate()` `metric` into `c("metric",
     "year")`.
-  - Store the result as `tidy`.
 
 <!-- end list -->
 
@@ -177,10 +130,11 @@ tidy
 
 ## `unite()` and `pivot_wider()`: Task
 
+Revert what you did before: go back to a messy dataset:
+
   - Use `unite()` to unite the columns `metric` and `year` as “metric”.
   - Use `pivot_wider()` to take the `names_from` the column `metric` and
-    create new columns – taking `values_from` the column `value`.
-  - Is the output wider than the input?
+    create new columns, taking `values_from` the column `value`.
 
 <!-- end list -->
 
@@ -219,13 +173,13 @@ tidy %>%
 
 ## Create a small dataset: Review
 
-Let’s create a small dataset to play with. Explain what this code does.
-
-You should already understand this code:
+Let’s create a small dataset to play with. You should understand this
+code:
 
   - Remove `continent`.
   - Subset life expectancy values for Argentina and Germany before 1962.
-  - Move the life expectancy values to the column `lifeExp`.
+  - Widen the dataset adding new columns with `names_from` the column
+    `metric`.
 
 ## Create a small dataset: Review
 
@@ -258,7 +212,6 @@ Now add a new column `mean`, holding the mean `lifeExp` for each
   - Use `mutate()` to calculate mean `lifeExp` and to make `year`
     numeric.
   - `ungroup()`.
-  - Store the result as `subset2`.
 
 <!-- end list -->
 
@@ -283,7 +236,7 @@ subset2
 
 ## Create a small dataset: Tweak
 
-Let’s degrade this dataset a bit for a later example.
+Let’s degrade this dataset for a later example.
 
 ``` r
 arg_ger <- subset2 %>% slice(-2) %>% select(-mean)
@@ -292,8 +245,8 @@ arg_ger <- subset2 %>% slice(-2) %>% select(-mean)
 ## `complete()`: What’s missing?
 
 Say you have the dataset `arg_ger`; it is missing data in between 1952
-and 1957, but – somehow – you know the historical mean for each country.
-Let’s use this data and knowledge to try fill the missing data.
+and 1957, but you know the historical mean for each country. Let’s fill
+the missing data.
 
 ``` r
 arg_ger
@@ -304,7 +257,7 @@ arg_ger
 #> 2 Germany    1952    67.5
 #> 3 Germany    1957    69.1
 
-# Historical mean life expectancy
+# Historical mean (1952-2007) of life expectancy
 mean_argentina <- 63.5
 mean_germany <- 68.3
 ```
@@ -331,18 +284,14 @@ arg_ger %>% ________(_______, year)
 
 ## `fill`: Task
 
-Extend the previous code:
-
-  - Fill the missing values of `lifeExp` with the value in
+  - Now fill the missing values of `lifeExp` with the value in
     `mean_argentina`.
-  - You’ll need to pass each value to fill as a named list.
-  - Store the result as `filled`.
 
 <!-- end list -->
 
 ``` r
 filled <- arg_ger %>% 
-  complete(country, year, fill = list(_______ = mean_argentina))
+  complete(country, year, fill = list(lifeExp = ______________))
 
 filled
 ```
@@ -357,44 +306,32 @@ filled
     #> 3 Germany    1952    67.5
     #> 4 Germany    1957    69.1
 
-## `full_seq()`: Task
+## `full_seq()`: Demo
 
-Let’s now complete the missing data in between 1952-1957.
-
-  - Use `pull()` to pull the available years.
-  - Use `full_seq()` to produce the full sequence of every year in the
-    range.
-  - Store the result as `all_years`.
-
-<!-- end list -->
+Compare:
 
 ``` r
-all_years <- filled %>% 
-  ____(year) %>% 
-  ________(period = 1)
-
-all_years
+filled %>% pull(year)
+#> [1] 1952 1957 1952 1957
+filled %>% pull(year) %>% full_seq(period = 1)
+#> [1] 1952 1953 1954 1955 1956 1957
 ```
 
-## `full_seq()`: Result
+## `full_seq()`: Task
 
-    #> [1] 1952 1953 1954 1955 1956 1957
-
-## `fill()`: Task
-
-  - Use `all_years` to `complete()` `year`; also complete `country` with
-    itself.
-  - Store the result as `full_mean`.
+  - Use `full_seq()` inside `complete()` to complete the full `year`
+    sequence.
 
 <!-- end list -->
 
 ``` r
-full_mean <- filled %>% ________(year = _________, country = _______)
+full_mean <- filled %>% 
+  complete(year = ________(year, period = 1), country = _______)
 
 full_mean
 ```
 
-## `fill()`: Result
+## `full_seq()`: Result
 
     #> # A tibble: 12 x 3
     #>     year country   lifeExp
@@ -414,12 +351,11 @@ full_mean
 
 ## `case_when()`: Task
 
-Fill `lifeExp` with the mean historical values for each country:
+Fill `lifeExp` with the historical mean values for each country:
 
-  - Use `mutate()` and `case_when()`.
+  - Use `case_when()` inside `mutate()`.
   - The 3 possible results are `mean_argentina`, `mean_germany`, or
     `lifeExp`.
-  - Store the result as `full`.
 
 ## `case_when()`: Task
 
@@ -480,7 +416,8 @@ full %>%
 
 ## Takeaways: Imoprt
 
-  - Use `vroom()` to ready multiple files into a single data frame.
+  - Use `vroom()` to ready multiple files at once and into a single data
+    frame.
 
 ## Takeaways: Tidy
 
@@ -491,26 +428,22 @@ full %>%
     and back.
   - Use `unite()` to unite multiple ones into a single one.
   - Use `separate()` to separate one column into multiple ones.
-  - Some functions you may use to fill missing values include:
-      - `complete()`, `fill()`, `full_seq()`, `case_when()`.
+  - Complete missing data with `complete()`, `full_seq()`, `fill`,
+    `case_when()`.
 
 ## Takeaways: Transform
 
-  - The select-helpers (e.g. `where()`) help to transform but also to
-    tidy data.
+  - The select-helpers (e.g. `where()`) appear in many places in the
+    tidyverse.
   - You can `filter()` with multiple conditions separated by `&` or
     comma `,`.
 
 ## Takeaways: Visualise
 
-  - You can extend the basic plot template to include many layers.
-  - Use `facet_wrap()` to plot subset of data in separate panels.
+  - You can extend the basic plot template to include multiple layers.
+  - Use `facet_wrap()` to plot subsets of data in separate panels.
 
 ## Takeaways: Communicate
 
-You can transform your github\_document into an .html slideshow with:
-
-    rmarkdown::render(
-      input = here("your-github_document.Rmd"), 
-      output_format = "ioslides_presentation"
-    )
+  - You can change the output format to, e.g., create .html
+    presentations.
